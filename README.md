@@ -16,6 +16,12 @@ person owns and touches, and turns it into a handoff the manager can act on in m
 The same brief is available in Rovo: the **Handoff Brief** agent answers "Prepare the handoff for Priya Nair" and can
 publish the page after the user confirms.
 
+## Demo video
+
+https://youtu.be/CxrLldAqXUE (2:48): Priya Nair, of a Finance Operations team, is going on leave. The brief, the approval
+that reassigns OPS-1 to Leo Martins, the handoff page in Confluence and the Rovo agent, all on the demo site
+`dms-release-gate.atlassian.net`. Narration is a synthesized voice.
+
 ## How the Teamwork Graph API is used
 
 All reads run inside Forge as the user who opens the app (`api.asUser().requestTeamworkGraph`), so every row is

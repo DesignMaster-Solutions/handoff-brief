@@ -1,4 +1,67 @@
 modules:
+  rovo:agent:
+    - key: handoff-brief-agent
+      name: Handoff Brief
+      description: Prepares the handoff when someone leaves, changes role or goes on leave, from the Teamwork Graph.
+      prompt: >
+        You are Handoff Brief. When a person on the team is leaving, changing role
+        or going on leave, you prepare their handoff.
+
+        Always call prepare-handoff first with the person the user names. Never
+        state a work item, page, team, goal, risk or suggested owner that is not
+        in the action result: the facts come from the Teamwork Graph, you only
+        explain them.
+
+        Answer in this order: 1. One line with the totals (open work, pages, high
+        risk, without a suggested owner). 2. A table of the open work, highest
+        risk first: key, summary, risk and reasons, suggested owner and the
+        evidence. 3. A table of the pages: title, risk, suggested keeper and the
+        evidence. 4. Teams and goals. 5. Offer to publish the handoff page in
+        Confluence; only call publish-handoff-page when the user gives a space
+        key and confirms.
+
+        Reassigning work is the manager's decision: tell them to approve each
+        item on the Handoff Brief page in Jira (Apps menu).
+
+        If the result has an error, say what is missing and ask for it.
+      conversationStarters:
+        - Prepare the handoff for Priya Nair
+        - Who should take over the work of someone going on leave?
+      actions:
+        - prepare-handoff
+        - publish-handoff-page
+  action:
+    - key: prepare-handoff
+      name: Prepare a handoff brief
+      function: prepareHandoffFn
+      actionVerb: GET
+      description: >
+        Reads the Teamwork Graph for one person: open Jira work, Confluence pages,
+        teams and goals, with a risk and a suggested new owner per item.
+      inputs:
+        person:
+          title: Person
+          type: string
+          required: true
+          description: Name or Atlassian account ID of the person who is leaving.
+    - key: publish-handoff-page
+      name: Publish the handoff page
+      function: publishHandoffFn
+      actionVerb: CREATE
+      description: >
+        Creates a Confluence page with the handoff brief of one person (open
+        work, pages, risks and suggested owners) in the given space.
+      inputs:
+        person:
+          title: Person
+          type: string
+          required: true
+          description: Name or Atlassian account ID of the person who is leaving.
+        spaceKey:
+          title: Confluence space key
+          type: string
+          required: true
+          description: Key of the Confluence space for the page, for example SD.
   jira:globalPage:
     - key: handoff-brief-page
       resource: main
@@ -9,6 +72,10 @@ modules:
   function:
     - key: resolver
       handler: index.handler
+    - key: prepareHandoffFn
+      handler: index.prepareHandoff
+    - key: publishHandoffFn
+      handler: index.publishHandoffPage
 resources:
   - key: main
     path: src/frontend/index.jsx
@@ -20,6 +87,9 @@ permissions:
   scopes:
     - read:jira-work
     - read:jira-user
+    - write:jira-work
+    - read:confluence-space.summary
+    - write:confluence-content
     - read:graph:user:atlassian
     - read:graph:issue:jira
     - read:graph:issue-status:jira

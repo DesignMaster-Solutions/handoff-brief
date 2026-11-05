@@ -49,3 +49,20 @@ test('a transient org permission error is retried, any other error surfaces', as
   const broken = async () => ({ errors: [{ message: 'Cannot query field "x"' }] });
   await assert.rejects(createGraphClient(broken).personGraph({ accountId: 'p', name: 'P' }), /Cannot query field/);
 });
+
+test('an optional section that fails becomes a warning and the brief keeps the work and pages', async () => {
+  const empty = { edges: [], pageInfo: { hasNextPage: false } };
+  const request = async (query) => {
+    if (query.includes('customQuery')) return { errors: [{ message: "Persisted Cypher execution isn't enabled for this caller or environment" }] };
+    if (query.includes('atlassianUserGoalsAndProjects')) return { errors: [{ message: 'Goals are not available on this site' }] };
+    if (query.includes('atlassianUserAssignedJiraWorkItems')) return { data: { atlassianUserAssignedJiraWorkItems: { edges: [
+      { node: { __typename: 'JiraWorkItem', id: 'i1', key: 'OPS-1', status: { name: 'To Do', statusCategory: { key: 'new' } } } }], pageInfo: { hasNextPage: false } } } };
+    if (query.includes('jiraWorkItemComments')) return { data: { o0: { edges: [] } } };
+    const field = query.match(/\{ (\w+)\(/)[1];
+    return { data: { [field]: empty } };
+  };
+  const g = await createGraphClient(request).personGraph({ accountId: 'p', name: 'Priya' });
+  assert.equal(g.workItems.length, 1);
+  assert.deepEqual([g.teams, g.goals], [[], []]);
+  assert.deepEqual(g.warnings.map((w) => w.split(':')[0]).sort(), ['Goals and projects', 'Pages they own', 'Teams']);
+});

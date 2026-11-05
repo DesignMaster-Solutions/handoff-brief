@@ -78,6 +78,7 @@ export function buildBrief(graph, now = new Date()) {
     pages,
     teams: graph.teams.map((t) => ({ id: t.id, displayName: t.displayName, members: t.members.length })),
     goals: graph.goals,
+    warnings: graph.warnings ?? [],
     summary: {
       openWork: workItems.length,
       highRisk: all.filter((x) => x.risk === 'high').length,

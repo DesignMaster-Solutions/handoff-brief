@@ -1,6 +1,6 @@
 // Reads everything the Teamwork Graph knows about one person, as the user who runs the app.
-// Curated queries for the typed traversals; two persisted Cypher queries (registered for this app,
-// see scripts/register-queries.mjs) for the traversals the catalog does not cover in one call.
+// Curated queries for the typed traversals; two persisted Cypher queries (registered for this app; the traversal
+// patterns are in README.md, "How the Teamwork Graph API is used") for what the catalog does not cover in one call.
 
 export const QUERY_KEYS = {
   teammates: 'aeab7437-a8cb-462b-a126-3ea722937d97', // user -> team <- members
@@ -96,13 +96,17 @@ export function createGraphClient(request) {
     async personGraph(person) {
       const u = { u: userAri(person.accountId) };
       const user = { decl: '$u: ID!', call: 'userId: $u' };
+      // Teams, owned pages and goals only add evidence: a site without them (or without persisted-query access)
+      // still gets the brief of the work and pages, with a warning, instead of no brief at all.
+      const warnings = [];
+      const optional = (label, read) => read.catch((e) => { warnings.push(`${label}: ${e.message}`); return []; });
       const [assigned, content, teamRows, ownedRows, goals] = await Promise.all([
         paged('handoffAssignedWork', 'atlassianUserAssignedJiraWorkItems', user, ITEM, u),
         paged('handoffCreatedContent', 'atlassianUserContent', { decl: '$u: ID!', call: 'userId: $u, roles: [CREATED], since: "P365D"' }, PAGE, u),
-        custom('handoffTeammates', QUERY_KEYS.teammates, { userId: u.u }),
-        custom('handoffOwnedPages', QUERY_KEYS.ownedPagesCoauthors, { userId: u.u }),
-        paged('handoffGoals', 'atlassianUserGoalsAndProjects', { decl: '$u: ID!', call: 'userId: $u, roles: [OWNS, CONTRIBUTES]' },
-          '... on AtlassianGoal { id name url } ... on AtlassianProject { id name url }', u),
+        optional('Teams', custom('handoffTeammates', QUERY_KEYS.teammates, { userId: u.u })),
+        optional('Pages they own', custom('handoffOwnedPages', QUERY_KEYS.ownedPagesCoauthors, { userId: u.u })),
+        optional('Goals and projects', paged('handoffGoals', 'atlassianUserGoalsAndProjects', { decl: '$u: ID!', call: 'userId: $u, roles: [OWNS, CONTRIBUTES]' },
+          '... on AtlassianGoal { id name url } ... on AtlassianProject { id name url }', u)),
       ]);
 
       const workItems = assigned.filter((n) => n.__typename === 'JiraWorkItem').map(toItem);
@@ -133,6 +137,7 @@ export function createGraphClient(request) {
         pages: [...pages.values()].map(({ fromOwned, ...p }) => p),
         teams: teamsFromRows(teamRows),
         goals: goals.filter((g) => g.id).map((g) => ({ id: g.id, name: g.name, url: g.url ?? null, __typename: g.__typename })),
+        warnings,
       };
     },
   };

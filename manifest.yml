@@ -23,7 +23,8 @@ modules:
         Reassigning work is the manager's decision: tell them to approve each
         item on the Handoff Brief page in Jira (Apps menu).
 
-        If the result has an error, say what is missing and ask for it.
+        If the result has an error, say what is missing and ask for it. If it
+        has warnings, say which parts of the graph could not be read.
       conversationStarters:
         - Prepare the handoff for Priya Nair
         - Who should take over the work of someone going on leave?

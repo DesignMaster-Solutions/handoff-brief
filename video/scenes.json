@@ -1,0 +1,36 @@
+{
+ "brand": "Handoff Brief · Design Master Solutions LLC · Codegeist 2026",
+ "voice": "Samantha", "rate": 182, "bg": "#0f1b2d", "accent": "#2563eb",
+ "out": "../docs/demo.mp4",
+ "scenes": [
+  {"title": "Handoff Brief", "lines": ["Someone leaves, changes role or goes on leave.", "The Teamwork Graph already knows what they hold.", "", "Forge app for Jira · Teamwork Graph · Rovo"],
+   "say": "Priya runs vendor contracts and payroll for the Finance Operations team, and she starts parental leave on Friday. Her manager has to know, today, what Priya holds and who should take each piece. Handoff Brief answers that from the Teamwork Graph in about ten seconds. This video runs under three minutes."},
+  {"title": "Pick the person", "lines": ["Jira > Apps > Handoff Brief"], "shots": ["s-brief-top.png"],
+   "say": "In Jira, the manager opens Handoff Brief from the Apps menu and picks Priya. The app reads the Teamwork Graph as the manager, so it only shows what the manager can already see. Five open work items, three Confluence pages, one team. Four items are high risk."},
+  {"title": "Open work, highest risk first", "lines": ["Risk: overdue, due in 7 days,", "or nobody else works on it.", "Suggested owner, with the graph evidence."], "shots": ["s-work.png"],
+   "say": "The payroll provider contract is overdue by three days. The suggested owner is Leo Martins, and the evidence comes from the graph: Leo commented on it twice, reported it, and is on the same team. The W-9 forms item is high risk for a different reason: nobody but Priya ever touched it, so the app falls back to a teammate and says so."},
+  {"title": "Pages only she wrote", "lines": ["Created or owned by the person,", "co-authors from a persisted Cypher query."], "shots": ["s-pages.png"],
+   "say": "The same goes for knowledge. The vendor contracts runbook and the month-end checklist were written by Priya alone, so they are flagged. The payroll calendar is low risk: Leo co-edited it, so Leo is the suggested keeper."},
+  {"title": "The manager approves, item by item", "lines": ["Approve = reassigned in Jira."], "shots": ["s-approved.png"],
+   "say": "Nothing moves without the manager. Approve on the payroll contract reassigns the work item to Leo in Jira, right away. Items without a good candidate stay with Priya until the manager decides."},
+  {"title": "Handoff page in Confluence", "lines": ["One click, in the team's space."], "shots": ["s-confluence.png"],
+   "say": "Then one click publishes the handoff page in the Finance Operations space: every open item with its risk and new owner, the pages, and the team. That page is what Leo reads on Monday."},
+  {"title": "Same brief in Rovo", "lines": ["Agent: Handoff Brief", "Action: prepare-handoff (GET)", "Action: publish-handoff-page (CREATE)"], "shots": ["s-rovo.png"],
+   "say": "The same brief is a Rovo agent. Ask it to prepare the handoff for Priya Nair, and it calls the prepare handoff action and explains the result. It never invents an owner: the facts come from the action, and publishing the page needs the user's confirmation."},
+  {"title": "How the Teamwork Graph API is used", "mono": [
+     "api.asUser().requestTeamworkGraph(query, variables)",
+     "",
+     "curated   atlassianUserAssignedJiraWorkItems",
+     "curated   jiraWorkItemComments        (one aliased request)",
+     "curated   atlassianUserContent(roles: [CREATED])",
+     "curated   confluencePageContributors",
+     "curated   atlassianUserGoalsAndProjects",
+     "persisted (user)-[:atlassian_user_is_in_atlassian_team]->(team)<-(member)",
+     "persisted (user)-[:atlassian_user_owns_confluence_page]->(page)<-[:contributed]-(coauthor)"],
+   "say": "Under the hood, every read is a Teamwork Graph call made as the user. Raw Cypher is closed to new apps, so Handoff Brief combines curated queries for work, comments, content and goals with two persisted Cypher queries registered for the app: one walks the team to its members, the other walks owned pages to their co-authors. The scoring is plain code, so the same graph always gives the same brief."},
+  {"title": "Tested", "mono_cmd": "npm test", "mono_cwd": "..", "mono_grep": ["✔", "✖", "ℹ pass", "ℹ fail"],
+   "say": "The rules and the graph parsing are covered by tests that run without a site."},
+  {"title": "Install it", "lines": ["Installation link and judge steps:", "github.com/DesignMaster-Solutions/handoff-brief", "", "Runs on Atlassian · read-only graph scopes", "MIT · Design Master Solutions LLC"],
+   "say": "The installation link and the steps for judges are in the repository. Handoff Brief runs on Atlassian, with no data leaving the platform. When someone leaves, the work does not have to."}
+ ]
+}

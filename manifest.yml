@@ -1,0 +1,32 @@
+modules:
+  jira:globalPage:
+    - key: handoff-brief-page
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Handoff Brief
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+app:
+  runtime:
+    name: nodejs24.x
+  id: ari:cloud:ecosystem::app/54d32e01-8c8d-45a0-a7d8-6bfe81dac761
+permissions:
+  scopes:
+    - read:jira-work
+    - read:jira-user
+    - read:graph:user:atlassian
+    - read:graph:issue:jira
+    - read:graph:issue-status:jira
+    - read:graph:issue-comment:jira
+    - read:graph:team:atlassian
+    - read:graph:page:confluence
+    - read:graph:blogpost:confluence
+    - read:graph:space:confluence
+    - read:graph:goal:atlassian
+    - read:graph:project:atlassian

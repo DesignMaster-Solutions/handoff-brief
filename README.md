@@ -16,6 +16,10 @@ person owns and touches, and turns it into a handoff the manager can act on in m
 The same brief is available in Rovo: the **Handoff Brief** agent answers "Prepare the handoff for Priya Nair" and can
 publish the page after the user confirms.
 
+## Devpost
+
+https://devpost.com/software/handoff-brief (Codegeist 2026, Apps for Business Teams, bonus Best apps with Teamwork Graph integration).
+
 ## Demo video
 
 https://youtu.be/CxrLldAqXUE (2:48): Priya Nair, of a Finance Operations team, is going on leave. The brief, the approval

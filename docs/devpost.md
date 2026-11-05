@@ -47,3 +47,13 @@ user's token, so the handoff page is written by the app, with granular Confluenc
 
 Reassign pages too (Confluence page owner), include Loom videos and pull requests the person created (the graph
 already has them), and a scheduled brief for managers when an out-of-office starts.
+
+
+## Testing instructions
+
+1. Install Handoff Brief with the installation link in the repository README (https://github.com/DesignMaster-Solutions/handoff-brief) on a Jira Cloud site; installing apps with Teamwork Graph scopes needs an organization admin. Install it in Confluence too when asked, for the handoff page.
+2. In Jira, open **Apps > Handoff Brief** and pick a person in **Person**. The first time, Forge asks you to allow access on your behalf.
+3. Approve a suggested owner on any work item (it is reassigned in Jira), then pick a space and **Publish in Confluence**.
+4. In Rovo, change the agent to **Handoff Brief** and ask it to prepare the handoff for a person by name.
+
+On a site where you are the only user, pick yourself: the brief lists your open work and pages, and the new owner says "nobody found", because the graph has nobody else next to those items. To see a suggestion, invite one colleague and have them comment on one of your work items; once the Teamwork Graph has the comment, the brief suggests them ("commented 1x"). If your site has no teams or goals, or the graph refuses one of the reads, the brief says which part could not be read and still lists the work and the pages. `scripts/seed-demo.mjs` in the repository creates the demo used in the video (project OPS, pages and comments, one phase per person).

@@ -42,8 +42,39 @@ permission-filtered: a manager only sees what they can already see. Raw `cypherQ
 | Their teams and teammates | persisted Cypher `teammates`: `(user)-[:atlassian_user_is_in_atlassian_team]->(team)<-[:atlassian_user_is_in_atlassian_team]-(member)` |
 | Goals and projects | curated `atlassianUserGoalsAndProjects(roles: [OWNS, CONTRIBUTES])` |
 
-The persisted queries are registered for this app (`POST /gateway/api/twg/cypher-queries`, keys in `src/graph.js`)
-and executed with `customQuery`. Every GraphQL operation is named `dmsco_<operation>`, as the API requires.
+### The two persisted Cypher queries
+
+They live on Atlassian's side, so this is the only copy of their text. Both were registered for this app
+(`ari:cloud:ecosystem::app/54d32e01-8c8d-45a0-a7d8-6bfe81dac761`) on 5 Nov 2026 with
+`POST /gateway/api/twg/cypher-queries`, each with one required parameter `userId` of type `ARI`; both answered 201,
+version 1, status `active`. The keys are in `QUERY_KEYS` in `src/graph.js` and the app runs them with `customQuery`.
+`src/graph.js` reads each row by its RETURN names, so a new registration must keep them (`t`, `m` and `p`, `c`).
+
+`teammates`, key `aeab7437-a8cb-462b-a126-3ea722937d97`:
+
+```cypher
+MATCH (u:AtlassianUser {ari: $userId})-[:atlassian_user_is_in_atlassian_team]->(t:AtlassianTeam)<-[:atlassian_user_is_in_atlassian_team]-(m:AtlassianUser) RETURN t, m
+```
+
+`owned-pages-coauthors`, key `fd3362ee-7b48-44ea-900c-75f424b8dbe4`:
+
+```cypher
+MATCH (u:AtlassianUser {ari: $userId})-[:atlassian_user_owns_confluence_page]->(p:ConfluencePage)<-[:atlassian_user_contributed_to_confluence_page]-(c:AtlassianUser) RETURN p, c
+```
+
+Request body, one per query:
+
+```json
+{ "appId": "<your app ARI>", "name": "teammates", "cypher": "<the text above>",
+  "paramsSchema": [{ "name": "userId", "type": "ARI", "required": true }] }
+```
+
+In our test the endpoint answered 401 to an API token and 201 to the logged-in browser session of the site admin, so
+we sent it from the browser on the site (`fetch('/gateway/api/twg/cypher-queries', { method: 'POST', credentials: 'include', ... })`).
+If you `forge register` your own copy, register both queries for your app ID and put the returned `queryKey` values
+in `QUERY_KEYS`.
+
+Every GraphQL operation is named `dmsco_<operation>`, as the API requires.
 
 The scoring is plain code (`src/brief.js`), not a model: a comment on the item is worth 3 points per comment, being the
 reporter 2, co-writing the page 3, being in the same team 1. The person who is leaving is never suggested. Same graph

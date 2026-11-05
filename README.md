@@ -59,6 +59,12 @@ in, same brief out; Rovo only explains the result.
    Confluence**.
 4. In Rovo, change the agent to **Handoff Brief** and ask "Prepare the handoff for <name>".
 
+On a site where you are the only user, pick yourself: the brief lists your open work and pages, and the new owner
+says "nobody found", because the graph has nobody else next to those items. To see a suggestion, invite one colleague
+and have them comment on one of your work items; once the Teamwork Graph has the comment, the brief suggests them
+("commented 1x"). If your site has no teams or goals, or the graph refuses one of the reads, the brief says which
+part could not be read and still lists the work and the pages.
+
 Demo data: `scripts/seed-demo.mjs` creates the Finance Operations project (OPS), the work items and the pages used in
 the video, in three phases (admin, the person leaving, a teammate), each with its own API token.
 

@@ -36,3 +36,16 @@ test('personGraph names every operation company_operation and merges owned pages
   assert.deepEqual(g.pages, [{ id: 'pg1', title: 'Runbook', contributors: [{ accountId: 'l', name: 'Leo' }] }]);
   assert.deepEqual(g.comments, { i1: [{ author: { accountId: 'l', name: 'Leo' } }] });
 });
+
+test('a transient org permission error is retried, any other error surfaces', async () => {
+  let calls = 0;
+  const flaky = async (query) => {
+    calls += 1;
+    if (calls === 1) return { errors: [{ message: 'User is not permitted to query this organization' }] };
+    const field = query.match(/\{ (\w+)\(/)?.[1] ?? 'customQuery';
+    return { data: { [field]: { edges: [], pageInfo: { hasNextPage: false } }, customQuery: { edges: [] } } };
+  };
+  await createGraphClient(flaky).personGraph({ accountId: 'p', name: 'P' });
+  const broken = async () => ({ errors: [{ message: 'Cannot query field "x"' }] });
+  await assert.rejects(createGraphClient(broken).personGraph({ accountId: 'p', name: 'P' }), /Cannot query field/);
+});

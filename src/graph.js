@@ -42,9 +42,17 @@ export function teamsFromRows(rowList) {
 
 export function createGraphClient(request) {
   async function gql(name, query, variables) {
-    const { data, errors } = await request(`query dmsco_${name}${query}`, variables);
-    if (errors?.length) throw new Error(`Teamwork Graph ${name}: ${errors.map((e) => e.message).join('; ')}`);
-    return data;
+    for (let attempt = 1; ; attempt += 1) {
+      const { data, errors } = await request(`query dmsco_${name}${query}`, variables);
+      if (!errors?.length) return data;
+      const message = errors.map((e) => e.message).join('; ');
+      // Preview API: the org permission check sometimes fails once and passes on the next call.
+      if (attempt < 3 && /not permitted to query this organization/.test(message)) {
+        console.warn(`Teamwork Graph ${name}: transient permission error, retry ${attempt}`);
+        continue;
+      }
+      throw new Error(`Teamwork Graph ${name}: ${message}`);
+    }
   }
 
   async function paged(name, field, args, fragment, variables) {

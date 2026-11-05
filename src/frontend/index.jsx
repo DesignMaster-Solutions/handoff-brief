@@ -4,6 +4,7 @@ import ForgeReconciler, {
 } from '@forge/react';
 import { invoke } from '@forge/bridge';
 
+const n = (k, one, many = `${one}s`) => `${k} ${k === 1 ? one : many}`;
 const APPEARANCE = { high: 'removed', medium: 'moved', low: 'success' };
 const riskCell = (x) => (
   <Stack space="space.050">
@@ -106,7 +107,7 @@ function App() {
       {s ? (
         <Stack space="space.300">
           <SectionMessage appearance={s.highRisk ? 'warning' : 'information'} title={`Handoff for ${result.person.name}`}>
-            <Text>{`${s.openWork} open work items, ${s.pages} pages, ${s.teams} teams, ${s.goals} goals or projects. ${s.highRisk} at high risk, ${s.withoutSuccessor} without a suggested owner.`}</Text>
+            <Text>{`${n(s.openWork, 'open work item')}, ${n(s.pages, 'page')}, ${n(s.teams, 'team')}, ${n(s.goals, 'goal or project', 'goals or projects')}. ${s.highRisk} at high risk, ${s.withoutSuccessor} without a suggested owner.`}</Text>
           </SectionMessage>
           <WorkTable items={result.workItems} person={result.person.name} />
           <PagesTable pages={result.pages} />

@@ -1,3 +1,5 @@
 node_modules/
 .env
 *.log
+video/s[0-9]*.*
+video/list.txt

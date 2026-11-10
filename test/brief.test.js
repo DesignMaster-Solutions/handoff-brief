@@ -74,7 +74,9 @@ test('pages: a page only the leaver wrote is at risk, a co-written one goes to t
 
 test('summary counts what is in the brief', () => {
   const b = buildBrief(graph, NOW);
-  assert.deepEqual(b.summary, { openWork: 3, highRisk: 3, pages: 2, teams: 1, goals: 1, withoutSuccessor: 0 });
+  assert.deepEqual(b.summary, { openWork: 3, highRisk: 3, highRiskWork: 2, pages: 2, teams: 1, goals: 1, withoutSuccessor: 0 });
+  // the headline must say where the high risk is: '5 open work items ... 5 at high risk' read as all five items
+  assert.match(handoffPageBody(b, NOW), /3 at high risk \(2 work items, 1 page\)/);
 });
 
 test('handoff page lists every item with the suggested owner and escapes HTML', () => {

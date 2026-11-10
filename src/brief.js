@@ -9,7 +9,7 @@ const isDone = (item) => (item.status?.statusCategory ?? '').toUpperCase() === '
 // shortcut: UTC dates, use the site timezone if teams far from UTC report a day of drift
 const utcDay = (d) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 const days = (from, to) => Math.round((utcDay(to) - utcDay(from)) / DAY);
-const plural = (n) => `${n} day${n === 1 ? "" : "s"}`;
+const plural = (n, one = "day") => `${n} ${one}${n === 1 ? "" : "s"}`;
 
 // Candidates for one object: who already works next to it, with the evidence. The leaver is never a candidate.
 function pickSuccessor(leaverId, evidence) {
@@ -86,6 +86,7 @@ export function buildBrief(graph, now = new Date()) {
     summary: {
       openWork: workItems.length,
       highRisk: all.filter((x) => x.risk === 'high').length,
+      highRiskWork: workItems.filter((x) => x.risk === 'high').length,
       pages: pages.length,
       teams: graph.teams.length,
       goals: graph.goals.length,
@@ -106,7 +107,7 @@ export function handoffPageBody(brief, now = new Date()) {
     + `<td>${esc(p.risk)}${p.reasons.length ? `: ${esc(p.reasons.join(', '))}` : ''}</td><td>${owner(p.suggested)}</td></tr>`).join('');
   return [
     `<p>Handoff brief for <strong>${esc(brief.person.name)}</strong>, prepared ${now.toISOString().slice(0, 10)} by Handoff Brief from the Teamwork Graph.</p>`,
-    `<p>${s.openWork} open work items, ${s.pages} pages, ${s.highRisk} at high risk, ${s.withoutSuccessor} without a suggested owner.</p>`,
+    `<p>${s.openWork} open work items, ${s.pages} pages, ${s.highRisk} at high risk (${plural(s.highRiskWork, "work item")}, ${plural(s.highRisk - s.highRiskWork, "page")}), ${s.withoutSuccessor} without a suggested owner.</p>`,
     '<h2>Open work</h2>',
     `<table><tbody><tr><th>Work item</th><th>Status</th><th>Risk</th><th>Suggested owner (evidence)</th></tr>${work}</tbody></table>`,
     '<h2>Pages they wrote</h2>',

@@ -107,7 +107,7 @@ function App() {
       {s ? (
         <Stack space="space.300">
           <SectionMessage appearance={s.highRisk ? 'warning' : 'information'} title={`Handoff for ${result.person.name}`}>
-            <Text>{`${n(s.openWork, 'open work item')}, ${n(s.pages, 'page')}, ${n(s.teams, 'team')}, ${n(s.goals, 'goal or project', 'goals or projects')}. ${s.highRisk} at high risk, ${s.withoutSuccessor} without a suggested owner.`}</Text>
+            <Text>{`${n(s.openWork, 'open work item')}, ${n(s.pages, 'page')}, ${n(s.teams, 'team')}, ${n(s.goals, 'goal or project', 'goals or projects')}. ${s.highRisk} at high risk (${n(s.highRiskWork, "work item")}, ${n(s.highRisk - s.highRiskWork, "page")}), ${s.withoutSuccessor} without a suggested owner.`}</Text>
           </SectionMessage>
           {result.warnings?.length ? (
             <SectionMessage appearance="warning" title="Part of the Teamwork Graph could not be read on this site">

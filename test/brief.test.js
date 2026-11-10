@@ -85,3 +85,14 @@ test('handoff page lists every item with the suggested owner and escapes HTML', 
   assert.match(html, /Leo/);
   assert.match(html, /Vendor runbook/);
 });
+
+// Jira due dates are calendar dates: the afternoon of the due day is still "due today", not overdue.
+test('risk wording counts calendar days: due today, 1 day (singular), overdue only from the next day', () => {
+  const item = (key, dueAt) => ({ id: key, key, summary: key, status: { name: 'To Do', statusCategory: 'TO_DO' }, dueAt, reporter: ANA });
+  const g = { ...graph, comments: {}, workItems: [item('D-0', '2026-11-05T00:00:00Z'), item('D-1', '2026-11-06T00:00:00Z'), item('D-2', '2026-11-04T00:00:00Z')] };
+  const byKey = Object.fromEntries(buildBrief(g, new Date('2026-11-05T18:00:00Z')).workItems.map((w) => [w.key, w]));
+  assert.deepEqual(byKey['D-0'].reasons, ['due today']);
+  assert.equal(byKey['D-0'].risk, 'medium');
+  assert.deepEqual(byKey['D-1'].reasons, ['due in 1 day']);
+  assert.deepEqual(byKey['D-2'].reasons, ['overdue 1 day']);
+});

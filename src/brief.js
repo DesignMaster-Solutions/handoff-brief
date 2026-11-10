@@ -5,7 +5,11 @@ const DAY = 86_400_000;
 const RANK = { high: 0, medium: 1, low: 2 };
 
 const isDone = (item) => (item.status?.statusCategory ?? '').toUpperCase() === 'DONE';
-const days = (from, to) => Math.round((to - from) / DAY);
+// Calendar days between two UTC dates: rounding hours called work due today "overdue 1 days" every afternoon.
+// shortcut: UTC dates, use the site timezone if teams far from UTC report a day of drift
+const utcDay = (d) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+const days = (from, to) => Math.round((utcDay(to) - utcDay(from)) / DAY);
+const plural = (n) => `${n} day${n === 1 ? "" : "s"}`;
 
 // Candidates for one object: who already works next to it, with the evidence. The leaver is never a candidate.
 function pickSuccessor(leaverId, evidence) {
@@ -41,8 +45,8 @@ function workItemEntry(graph, item, now, teammates) {
   const reasons = [];
   if (item.dueAt) {
     const d = days(now, new Date(item.dueAt));
-    if (d < 0) reasons.push(`overdue ${-d} days`);
-    else if (d <= 7) reasons.push(`due in ${d} days`);
+    if (d < 0) reasons.push(`overdue ${plural(-d)}`);
+    else if (d <= 7) reasons.push(d === 0 ? "due today" : `due in ${plural(d)}`);
   }
   if (direct.length === 0) reasons.push('only the leaver works on it');
   const risk = reasons.some((r) => r.startsWith('overdue') || r.startsWith('only')) ? 'high' : reasons.length ? 'medium' : 'low';
